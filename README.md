@@ -1,5 +1,5 @@
 # QhatuyCloud-microservicio
-Aquí tienes la transcripción exacta del texto contenido en la imagen:
+
 
 # Proyecto: QhatuyCloud
 
@@ -64,5 +64,3 @@ Plataforma ligera en la nube que permite a los artesanos actualizar stock e insu
 
  |
 | **Notificaciones** | Envío de avisos SMS/WhatsApp sobre nuevos pedidos o falta de insumos.
-
- |
