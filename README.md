@@ -1,6 +1,10 @@
 # QhatuyCloud-microservicio
 
-Airton Waldir Nina Meza
+Airton Waldir Nina Meza 
+Frank Luis Gomez Cornejo
+Jorcaef Vicente Rivera Cusihuaman
+Iarley Josue Ranirez LLigua
+Grimaldo Huacho Criollo
 
 
 # Proyecto: QhatuyCloud
