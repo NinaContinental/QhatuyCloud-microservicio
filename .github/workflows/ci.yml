@@ -1,0 +1,51 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  qhatuy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Construir imagenes Docker
+        run: docker compose build
+
+      - name: Iniciar servicios
+        run: docker compose up -d
+
+      - name: Esperar a que los servicios respondan
+        run: |
+          for p in 3001 3002 3003 3004 3005; do
+            for i in $(seq 1 30); do
+              curl -sf http://localhost:$p/health > /dev/null && break
+              sleep 2
+            done
+          done
+
+      - name: Pruebas Artesanos
+        run: docker compose exec -T artesanos npm test
+
+      - name: Pruebas Inventario
+        run: docker compose exec -T inventario npm test
+
+      - name: Pruebas Pedidos
+        run: docker compose exec -T pedidos npm test
+
+      - name: Pruebas Produccion
+        run: docker compose exec -T produccion npm test
+
+      - name: Pruebas Notificaciones
+        run: docker compose exec -T notificaciones npm test
+
+      - name: Mostrar registros si falla
+        if: failure()
+        run: docker compose logs
+
+      - name: Detener contenedores
+        if: always()
+        run: docker compose down -v
