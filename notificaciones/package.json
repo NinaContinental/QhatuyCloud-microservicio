@@ -6,7 +6,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "start": "node src/server.js"
   },
   "keywords": [],
