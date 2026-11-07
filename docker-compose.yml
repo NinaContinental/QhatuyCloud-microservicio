@@ -27,6 +27,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/inventario_db
       NOTIFICACIONES_URL: http://notificaciones:3005
+      PRODUCCION_URL: http://produccion:3004
     depends_on:
       db: { condition: service_healthy }
       notificaciones: { condition: service_started }
@@ -38,6 +39,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/pedidos_db
       INVENTARIO_URL: http://inventario:3002
       NOTIFICACIONES_URL: http://notificaciones:3005
+      PRODUCCION_URL: http://produccion:3004
     depends_on:
       db: { condition: service_healthy }
       inventario: { condition: service_started }
