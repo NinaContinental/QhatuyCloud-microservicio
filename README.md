@@ -120,3 +120,19 @@ Puerto 3005, base de datos `notificaciones_db`. Recibe los avisos de pedido nuev
 ![Tabla notificaciones en PostgreSQL](docs/img/notificaciones-db.png)
 
 > Alcance: los avisos se almacenan y se consultan por la API. En esta versión no se envían mensajes reales por WhatsApp, SMS ni correo.
+
+---
+
+## 10. Flujo de trabajo del equipo
+
+- Repositorio central público administrado por el líder del equipo.
+- Cada integrante trabaja en su propio fork (o en una rama propia, en el caso del líder) y propone sus cambios mediante Pull Requests hacia `main`.
+- Antes de fusionar, cada Pull Request se revisa y el pipeline de GitHub Actions ejecuta las pruebas y la construcción de las imágenes Docker.
+
+**Protección de la rama `main`** (regla `proteger-main`, activa y sin excepciones):
+
+- **Require a pull request before merging** con **1 aprobación**: ningún cambio entra a `main` sin Pull Request aprobado.
+- **Block force pushes**: no se puede reescribir el historial de `main`.
+- **Restrict deletions**: no se puede eliminar la rama `main`.
+
+![Regla de protección de la rama main](docs/img/proteccion-main.png)
