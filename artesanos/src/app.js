@@ -90,3 +90,4 @@ app.delete('/artesanos/:id', async (req, res) => {
 });
 
 module.exports = app;
+// Documentacion de endpoints del microservicio Artesanos
