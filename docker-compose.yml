@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  artesanos:
+    build: ./artesanos
+    ports: ["3001:3001"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/artesanos_db
+    depends_on:
+      db: { condition: service_healthy }
+
+  inventario:
+    build: ./inventario
+    ports: ["3002:3002"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/inventario_db
+      NOTIFICACIONES_URL: http://notificaciones:3005
+    depends_on:
+      db: { condition: service_healthy }
+      notificaciones: { condition: service_started }
+
+  pedidos:
+    build: ./pedidos
+    ports: ["3003:3003"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/pedidos_db
+      INVENTARIO_URL: http://inventario:3002
+      NOTIFICACIONES_URL: http://notificaciones:3005
+    depends_on:
+      db: { condition: service_healthy }
+      inventario: { condition: service_started }
+      notificaciones: { condition: service_started }
+
+  produccion:
+    build: ./produccion
+    ports: ["3004:3004"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/produccion_db
+      PEDIDOS_URL: http://pedidos:3003
+      INVENTARIO_URL: http://inventario:3002
+    depends_on:
+      db: { condition: service_healthy }
+      pedidos: { condition: service_started }
+      inventario: { condition: service_started }
+
+  notificaciones:
+    build: ./notificaciones
+    ports: ["3005:3005"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/notificaciones_db
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  pgdata:
