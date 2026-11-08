@@ -79,13 +79,160 @@ Plataforma ligera en la nube que permite a los artesanos actualizar stock e insu
 
 ## 7. Pruebas
 
-Las pruebas usan Jest y Supertest contra la base de datos PostgreSQL de cada servicio. Se ejecutan con:
+Las pruebas automatizadas de QhatuyCloud utilizan **Jest y Supertest** para verificar el funcionamiento de los cinco microservicios. Se comprueba la disponibilidad de las API, la validación de datos, las operaciones principales y la comunicación entre servicios.
+
+Para ejecutar las pruebas se utiliza el siguiente comando, reemplazando `<servicio>` por el nombre correspondiente:
 
 ```bash
 docker compose exec <servicio> npm test
 ```
 
-### 7.5 Notificaciones
+### 7.1 Microservicio Artesanos
+
+El microservicio Artesanos funciona en el puerto **3001** y se encarga de gestionar la información de los productores textiles, talleres y sus datos de contacto. Permite centralizar la información de los artesanos para facilitar su identificación y participación en las actividades de producción.
+
+**Pruebas realizadas:**
+
+Se ejecutaron tres pruebas automatizadas para verificar el funcionamiento del microservicio, incluyendo su disponibilidad y el comportamiento de las operaciones implementadas.
+
+Las pruebas verifican que el servicio responda correctamente, procese las solicitudes y gestione adecuadamente los datos recibidos.
+
+**Resultado:** 3 de 3 pruebas aprobadas.
+
+**Comando utilizado:**
+
+```bash
+docker compose exec artesanos npm test
+```
+
+**Evidencia:** Agregar aquí la captura de las pruebas de Artesanos.
+
+---
+
+### 7.2 Microservicio Inventario
+
+El microservicio Inventario funciona en el puerto **3002** y administra el catálogo de productos terminados e insumos utilizados por los artesanos. Permite consultar artículos, actualizar existencias y detectar productos con bajo stock. También comunica las alertas al microservicio Notificaciones.
+
+**Pruebas realizadas:**
+
+1. **GET /health:** verifica la disponibilidad del servicio. Se espera una respuesta 200 con estado `ok`.
+2. **POST /items:** verifica el registro de artículos. Se espera que el artículo se guarde y pueda consultarse por su ID.
+3. **POST /items:** comprueba que se rechacen tipos de artículos no permitidos. Se espera una respuesta 400.
+4. **PATCH /items/:id/stock:** verifica el control de existencias cuando se intenta descontar más stock del disponible. Se espera una respuesta 409 y que el stock no cambie.
+5. **GET /alertas/bajo-stock:** verifica la identificación de artículos cuya existencia está por debajo del mínimo establecido.
+
+**Resultado:** 5 de 5 pruebas aprobadas.
+
+**Comando utilizado:**
+
+```bash
+docker compose exec inventario npm test
+```
+
+**Evidencia:** Agregar aquí la captura de las pruebas de Inventario.
+
+---
+
+### 7.3 Microservicio Pedidos
+
+El microservicio Pedidos funciona en el puerto **3003** y registra las compras realizadas por tiendas, mayoristas y asociaciones de artesanos. Verifica la disponibilidad de productos mediante Inventario, descuenta las existencias y envía notificaciones. Cuando un pedido es confirmado, comunica la información al microservicio Producción.
+
+**Pruebas realizadas:**
+
+1. **GET /health:** verifica la disponibilidad del servicio. Se espera una respuesta 200.
+2. **GET /pedidos:** comprueba la consulta general de pedidos. Se espera una lista de registros.
+3. **POST /pedidos:** verifica el rechazo de datos incompletos. Se espera una respuesta 400.
+4. **POST /pedidos:** comprueba el registro de un pedido, el descuento de stock y el envío de una notificación. Se espera una respuesta 201.
+5. **POST /pedidos:** verifica que el pedido se conserve cuando falla el servicio de Notificaciones y que se informe del inconveniente.
+6. **POST /pedidos:** comprueba el rechazo de pedidos sin stock suficiente. Se espera una respuesta 409.
+7. **POST /pedidos:** verifica el rechazo de productos inexistentes. Se espera una respuesta 404.
+8. **PATCH /pedidos/:id/estado:** comprueba la actualización del estado y la comunicación con Producción cuando el pedido se confirma. Se espera una respuesta 200.
+9. **PATCH /pedidos/:id/estado:** verifica que se conserve el estado anterior si Producción rechaza la solicitud. Se espera una respuesta 502.
+10. **PATCH /pedidos/:id/estado:** comprueba el rechazo de estados no permitidos. Se espera una respuesta 400.
+
+**Resultado:** 10 de 10 pruebas aprobadas.
+
+**Comando utilizado:**
+
+```bash
+docker compose exec pedidos npm test
+```
+
+**Evidencia:** Agregar aquí la captura de las pruebas de Pedidos.
+
+---
+
+### 7.4 Microservicio Producción
+
+El microservicio Producción funciona en el puerto **3004** y administra el seguimiento de fabricación de los pedidos confirmados. Recibe información desde Pedidos, registra órdenes de producción, permite consultar sus datos y actualizar sus estados.
+
+**Pruebas realizadas:**
+
+1. **GET /health:** verifica la disponibilidad del servicio. Se espera una respuesta 200.
+2. **POST /produccion:** comprueba el registro de una orden de producción. Se espera una respuesta 201 y el estado inicial `pendiente`.
+3. **POST /produccion:** verifica el rechazo de información incompleta. Se espera una respuesta 400.
+4. **POST /produccion:** comprueba el rechazo de cantidades negativas. Se espera una respuesta 400.
+5. **POST /produccion:** verifica que no se registren órdenes duplicadas para un mismo pedido. Se espera una respuesta 409.
+6. **GET /produccion:** comprueba la consulta general de órdenes. Se espera una respuesta 200 con una lista.
+7. **GET /produccion/:id:** verifica la consulta de una orden existente. Se espera una respuesta 200 con sus datos.
+8. **GET /produccion/:id:** comprueba la respuesta ante una orden inexistente. Se espera una respuesta 404.
+9. **PATCH /produccion/:id/estado:** verifica la actualización de estados y el rechazo de estados inválidos. Se esperan respuestas 200 y 400, respectivamente.
+10. **Prueba de comunicación con Pedidos:** verifica el manejo de errores cuando no se puede completar la comunicación requerida. Se espera una respuesta 503.
+
+**Resultado:** 10 de 10 pruebas aprobadas.
+
+**Comando utilizado:**
+
+```bash
+docker compose exec produccion npm test
+```
+
+**Evidencia:** Agregar aquí la captura de las pruebas de Producción.
+
+---
+
+### 7.5 Microservicio Notificaciones
+
+El microservicio Notificaciones funciona en el puerto **3005** y se encarga de registrar y consultar los avisos generados por los demás servicios. Recibe notificaciones de pedidos nuevos desde Pedidos y alertas de bajo stock desde Inventario. Los avisos se almacenan en PostgreSQL para permitir su consulta posterior.
+
+**Pruebas realizadas:**
+
+1. **GET /health:** verifica la disponibilidad del servicio. Se espera una respuesta 200.
+2. **Registro de pedido nuevo:** comprueba que se almacene correctamente una notificación recibida desde Pedidos.
+3. **Validación de datos incompletos:** verifica que se rechacen solicitudes de pedidos con información faltante. Se espera una respuesta 400.
+4. **Validación de cantidad y comprador:** comprueba el rechazo de cantidades inválidas o compradores vacíos.
+5. **Registro de alerta de stock bajo:** verifica que se reciban correctamente las alertas enviadas por Inventario.
+6. **Aceptación de stock igual a cero:** comprueba que se pueda registrar una alerta cuando el stock llega a cero.
+7. **Validación de stock:** verifica el rechazo de datos inválidos, como stock negativo o identificadores incorrectos.
+8. **GET /notificaciones:** comprueba que se devuelva una lista de notificaciones.
+9. **Filtro por tipo:** verifica que `GET /notificaciones?tipo=stock_bajo` devuelva únicamente alertas de bajo stock.
+10. **GET /notificaciones/:id:** comprueba la consulta de una notificación existente.
+11. **Consulta de registro inexistente:** verifica que se devuelva una respuesta 404.
+12. **Validación de identificador:** comprueba que un ID no numérico genere una respuesta 400.
+13. **Marcar notificación como leída:** verifica que el estado `leida` cambie a `true`.
+14. **Actualización de registro inexistente:** comprueba que se devuelva una respuesta 404.
+15. **Persistencia en PostgreSQL:** verifica que la notificación permanezca almacenada y pueda consultarse desde otra conexión a la base de datos.
+
+**Resultado:** 15 de 15 pruebas aprobadas.
+
+**Comando utilizado:**
+
+```bash
+docker compose exec notificaciones npm test
+```
+
+**Evidencias:**
+
+- [Pruebas de Notificaciones aprobadas](https://github.com/NinaContinental/QhatuyCloud-microservicio/blob/main/docs/img/notificaciones-tests.png)
+- [Consulta de notificaciones mediante la API](https://github.com/NinaContinental/QhatuyCloud-microservicio/blob/main/docs/img/notificaciones-api.png)
+- [Registros almacenados en PostgreSQL](https://github.com/NinaContinental/QhatuyCloud-microservicio/blob/main/docs/img/notificaciones-db.png)
+
+**Alcance:** En esta versión, los avisos se almacenan y consultan mediante la API. No se envían mensajes reales por WhatsApp, SMS ni correo electrónico.
+
+---
+
+
+### 7.6 Notificaciones
 
 Puerto 3005, base de datos `notificaciones_db`. Recibe los avisos de pedido nuevo (desde Pedidos) y de stock bajo (desde Inventario), los valida y los guarda en PostgreSQL. Detalle de endpoints y base de datos en [notificaciones/README.md](notificaciones/README.md).
 
@@ -121,9 +268,25 @@ Puerto 3005, base de datos `notificaciones_db`. Recibe los avisos de pedido nuev
 
 > Alcance: los avisos se almacenan y se consultan por la API. En esta versión no se envían mensajes reales por WhatsApp, SMS ni correo.
 
----
+7.7 Resumen general de resultados
 
-## 10. Flujo de trabajo del equipo
+Los cinco microservicios cuentan con pruebas automatizadas ejecutadas mediante Jest y Supertest.
+
+Artesanos (3001): 3 de 3 pruebas aprobadas.
+
+Inventario (3002): 5 de 5 pruebas aprobadas.
+
+Pedidos (3003): 10 de 10 pruebas aprobadas.
+
+Producción (3004): 10 de 10 pruebas aprobadas.
+
+Notificaciones (3005): 15 de 15 pruebas aprobadas.
+
+Total general: 43 de 43 pruebas aprobadas.
+
+Estos resultados permiten comprobar el funcionamiento de los servicios, sus operaciones principales, las validaciones implementadas y diferentes escenarios de comunicación entre microservicios.
+
+8. Flujo de trabajo del equipo
 
 - Repositorio central público administrado por el líder del equipo.
 - Cada integrante trabaja en su propio fork (o en una rama propia, en el caso del líder) y propone sus cambios mediante Pull Requests hacia `main`.
