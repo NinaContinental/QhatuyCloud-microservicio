@@ -76,6 +76,13 @@ Plataforma ligera en la nube que permite a los artesanos actualizar stock e insu
 | **Notificaciones** | Registro y consulta de avisos internos de pedido nuevo y stock bajo (envío por SMS/WhatsApp previsto como mejora futura). |
 
 ---
+### 6. Base de datos y Ejecución
+
+PostgreSQL 16 en un contenedor, con una base de datos por microservicio (`artesanos_db`, `inventario_db`, `pedidos_db`, `produccion_db`, `notificaciones_db`). Cada servicio crea sus tablas al iniciar.
+
+Para ejecutar todo el sistema:
+`docker compose up -d --build`
+---
 
 ## 7. Pruebas
 
@@ -216,3 +223,21 @@ Puerto 3005, base de datos `notificaciones_db`. Recibe los avisos de pedido nuev
 - **Restrict deletions**: no se puede eliminar la rama `main`.
 
 ![Regla de protección de la rama main](docs/img/proteccion-main.png)
+---
+### 9. Docker
+
+Cada microservicio cuenta con su propio Dockerfile. El archivo docker-compose.yml orquesta los 5 servicios y la base de datos PostgreSQL, permitiendo levantar todo el ecosistema con un solo comando.
+
+![Evidencia Docker](docs/img/Captura%20de%20pantalla%202026-11-08%20160710.png)
+
+---
+### 10. Integración Continua (GitHub Actions)
+
+Se implementó un flujo en `.github/workflows/ci.yml` que se ejecuta automáticamente con cada Pull Request hacia la rama `main`. Este pipeline construye las imágenes Docker y ejecuta las pruebas de los 5 microservicios para asegurar la estabilidad.
+
+![Evidencia Actions](docs/img/NOMBRE_DE_TU_FOTO_DE_ACTIONS.png)
+
+---
+### 11. Uso de herramientas de IA
+
+Se utilizaron herramientas de IA como apoyo para proponer la estructura inicial del proyecto, generar el código base de los microservicios y resolver errores de orquestación en la terminal. Cada integrante revisó, ejecutó y probó el código de su respectivo servicio antes de subirlo mediante Pull Request, asegurando comprender la lógica. Las pruebas automáticas y el pipeline de CI verifican que el sistema funciona de manera integrada. La propuesta del contexto y el problema fue elaborada íntegramente por el equipo.
