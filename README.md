@@ -235,7 +235,7 @@ Cada microservicio cuenta con su propio Dockerfile. El archivo docker-compose.ym
 
 Se implementó un flujo en `.github/workflows/ci.yml` que se ejecuta automáticamente con cada Pull Request hacia la rama `main`. Este pipeline construye las imágenes Docker y ejecuta las pruebas de los 5 microservicios para asegurar la estabilidad.
 
-![Evidencia Actions](docs/img/NOMBRE_DE_TU_FOTO_DE_ACTIONS.png)
+![Evidencia Actions](docs/img/Captura%20de%20pantalla%202026-11-08%20164930.png)
 
 ---
 ### 11. Uso de herramientas de IA
